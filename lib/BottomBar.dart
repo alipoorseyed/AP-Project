@@ -1,6 +1,3 @@
-
-import 'dart:math';
-
 import 'package:ap_project/log.dart';
 import 'package:flutter/material.dart';
 
