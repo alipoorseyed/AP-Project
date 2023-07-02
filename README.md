@@ -2,10 +2,6 @@
 
 Hagh-Charter is a travel booking app that allows users to buy travel tickets (internatioan and domestic).
 
-## Screenshots
-
-![SignUpPage](https://s8.uupload.ir/files/screenshot_2023-07-02_105520_j8a6.png)
-
 ## Features
 
 - User registration and login
@@ -20,4 +16,11 @@ Hagh-Charter is a travel booking app that allows users to buy travel tickets (in
 - Dart programming language
 - Java for Backend
 - .txt files for database
-  
+
+## Screenshots
+
+![SignUpPage](https://s8.uupload.ir/files/screenshot_2023-07-02_105520_j8a6.png)
+![AccountInfo](https://s8.uupload.ir/files/screenshot_2023-07-02_105618_w4t2.png)
+![MoneyPage](https://s8.uupload.ir/files/screenshot_2023-07-02_105637_8cjm.png)
+![TripList](https://s8.uupload.ir/files/screenshot_2023-07-02_105652_fbxj.png)
+![FlightBooking](https://s8.uupload.ir/files/screenshot_2023-07-02_105742_i1so.png)
