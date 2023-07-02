@@ -68,6 +68,10 @@ flutter:
     - assets/Saha_air.png
     - assets/aseman.png
     - assets/levi.webp
+    - assets/Borchin-ir-Zagros Air logo png layered.png
+    - assets/Borchin-ir-Kish Air logo png layered.png
+    - assets/Borchin-ir-caspian air logo png layered.png
+    - assets/Borchin-ir-Ata Air logo png layered.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
