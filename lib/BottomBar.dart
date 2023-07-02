@@ -8,7 +8,9 @@ import 'moneypage.dart';
 
 class Bar extends StatefulWidget {
   final int index;
-  const Bar({Key? key, required this.index}) : super(key: key);
+  String username;
+  //const Bar({Key? key, required this.index}) : super(key: key);
+  Bar({required this.username,required this.index});
 
   @override
   State<Bar> createState() => _BarState();
@@ -18,30 +20,26 @@ class _BarState extends State<Bar> {
   void hompage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => homepage()),
+      MaterialPageRoute(builder: (context) => homepage(username: widget.username,)),
     );
   }
 
   void userInformationTapped() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AccountInfoPage(accountMoney: 220,birthdayValue: "aban",email: "ali@gmail.com",genderValue: "male",meliCodeValue: "22837281",name: "ali",nameValue: "aliuchiha",)),
+      MaterialPageRoute(builder: (context) => AccountInfoPage(username: widget.username)),
     );
   }
-  List<Flight> flights =[
-    Flight(time: "15 PM", cost: "2500", company: "iran air", shomare_sefaresh: "4024130", date: DateTime.now())
-  ];
   void flightListonTapped() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TripsListPage(flights: flights)),
+      MaterialPageRoute(builder: (context) => TripsListPage(username: widget.username)),
     );
   }
-  List<Tarakonesh> lisssst = [Tarakonesh(kind: "داخلی", increase: true, codePaygiri: "015865", cost: 456456),Tarakonesh(kind: "خارجی", increase: false, codePaygiri: "01584565", cost: 85856)];
   void budgetonTapped() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) =>  MoneyPage(initialBalance: 2000, tarakoneshList: lisssst,)),
+      MaterialPageRoute(builder: (context) =>  MoneyPage(username: widget.username)),
     );
   }
 
