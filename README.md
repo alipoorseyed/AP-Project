@@ -5,7 +5,7 @@ Hagh-Charter is a travel booking app that allows users to buy travel tickets (in
 ## Features
 
 - User registration and login
-- FLight ticket booking
+- Flight ticket booking
 - Search and filter options
 - Payment integration
 - User profile management
