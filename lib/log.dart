@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:untitled/BottomBar.dart';
 import 'package:untitled/HomePage.dart';
@@ -12,7 +14,11 @@ class loginpage extends StatefulWidget {
 class _loginpageState extends State<loginpage> {
   bool show = true;
   bool isHovered = false;
-
+   final String ip = '172.20.10.5';
+   final int port = 2486;
+   String respon="";
+  TextEditingController usernamecontroller = TextEditingController();
+  TextEditingController passwordcontroller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -70,6 +76,7 @@ class _loginpageState extends State<loginpage> {
                       ),
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 20, color: Colors.black),
+                      controller:usernamecontroller ,
                     ),
                     elevation: 3,
                     borderRadius: BorderRadius.circular(40),
@@ -101,6 +108,7 @@ class _loginpageState extends State<loginpage> {
                       ),
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 20, color: Colors.black),
+                      controller: passwordcontroller,
                     ),
                     elevation: 3,
                     borderRadius: BorderRadius.circular(40),
@@ -113,12 +121,63 @@ class _loginpageState extends State<loginpage> {
                         width: 180,
                         margin: EdgeInsets.only(top: 20),
                         child: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) {
-                                return homepage();
-                              }),
-                            );
+                          onPressed: () async{
+                            String ans = await sendMessage();
+                            if(ans=="valid"){
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) {
+                                  return homepage(username: usernamecontroller.text,);
+                                }),
+                              );
+                            }else{
+                              if(ans=="findError") {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text(
+                                          "خطا", textAlign: TextAlign.right),
+                                      content: Center(
+                                          child: Text(
+                                            "نام کاربری پیدا نشد .",
+                                            textAlign: TextAlign.center,)
+                                      ),
+                                      actions: [
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: TextButton(onPressed: () {
+                                            Navigator.of(context).pop();
+                                          }, child: Text("تایید")),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                );
+                              }else{
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text(
+                                          "خطا", textAlign: TextAlign.right),
+                                      content: Center(
+                                          child: Text(
+                                            "رمز عبور اشتباه است .",
+                                            textAlign: TextAlign.center,)
+                                      ),
+                                      actions: [
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: TextButton(onPressed: () {
+                                            Navigator.of(context).pop();
+                                          }, child: Text("تایید")),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                            }
                           },
                           child: Text(
                             "ورود",
@@ -169,6 +228,28 @@ class _loginpageState extends State<loginpage> {
         ),
       ),
     );
+  }
+  Future<String> sendMessage() async {
+    if (usernamecontroller.text.isNotEmpty && passwordcontroller.text.isNotEmpty) {
+      try {
+        final serverSocket = await Socket.connect(ip, port);
+        print('connected');
+        serverSocket.write("client-verifyLogin-${usernamecontroller.text}-${passwordcontroller.text},");
+        serverSocket.flush();
+        print('write');
+        await serverSocket.listen((socket) {
+          respon = String.fromCharCodes(socket).trim().substring(2);
+          setState(() {});
+          print("this is show: " + respon);
+        }).asFuture();
+
+        serverSocket.close();
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
+
+    return respon;
   }
 }
 
