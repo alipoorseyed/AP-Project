@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'FlightBookingPage.dart';
@@ -9,12 +11,13 @@ class FlightSearchResultsPageBargasht extends StatefulWidget {
   final String destination;
   final DateTime dateTimeone;
   final bool Roundtrip;
-  final DateTime? dataTimetwo;
+  final DateTime dateTimetwo;
   final int pass;
   Flight sourceflight;
   final bool international;
+  String username;
 
-  FlightSearchResultsPageBargasht({required this.sourceflight,required this.source, required this.destination, required this.dateTimeone,this.dataTimetwo,required this.Roundtrip,required this.pass,required this.international});
+  FlightSearchResultsPageBargasht({required this.username,required this.sourceflight,required this.source, required this.destination, required this.dateTimeone,required this.dateTimetwo,required this.Roundtrip,required this.pass,required this.international});
 
   @override
   _FlightSearchResultsPageBargashtState createState() => _FlightSearchResultsPageBargashtState();
@@ -22,8 +25,8 @@ class FlightSearchResultsPageBargasht extends StatefulWidget {
 
 class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPageBargasht> {
   DateTime selectedDate = DateTime.now();
-  List<String> flightCompanies = ['iran air', 'mahan air', 'saha', 'asman'];
-  List<String> selectedCompanies = ['iran air', 'mahan air', 'saha', 'asman'];
+  List<String> flightCompanies = [];
+  List<String> selectedCompanies = [];
   int hour1 = 0;
   int hour2 = 23;
   int counter = 0;
@@ -35,15 +38,44 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
   List<Flight> selectedflights = [];
   TimeOfDay minFlightTime = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay maxFlightTime = TimeOfDay(hour: 23, minute: 59);
+  final String ip = '172.20.10.5';
+  final int port = 2486;
+  String respon="";
+  String flightlist="";
+  List<String> flightlistfinal=[];
+  bool intern=false;
 
-  void initState() {
-    super.initState();
-    flights = [
-      Flight(source: widget.source, destination: widget.destination, time: 10, cost: 2, company: 'iran air', dateTime: widget.dateTimeone),
-      Flight(source: widget.source, destination: widget.destination, time: 0, cost: 1, company: 'mahan air', dateTime: widget.dateTimeone),
-      Flight(source: widget.source, destination: widget.destination, time: 14, cost: 3, company: 'saha', dateTime: widget.dateTimeone),
-      Flight(source: widget.source, destination: widget.destination, time: 16, cost: 1, company: 'asman', dateTime: widget.dateTimeone),
-    ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    fetchFlights();
+  }
+
+  Future<void> fetchFlights() async {
+    flightlist = await sendMessage();
+    if (flightlist != "noFlights") {
+      flightlistfinal = flightlist.split("\n");
+      for (int i = 0; i < flightlistfinal.length; i++) {
+        intern = false;
+        if (flightlistfinal[i].split("-")[7] == "int") {
+          intern = true;
+        }
+        flights.add(Flight(
+          source: flightlistfinal[i].split("-")[1],
+          destination: flightlistfinal[i].split("-")[2],
+          time: int.parse(flightlistfinal[i].split("-")[3]),
+          cost: double.parse(flightlistfinal[i].split("-")[4]),
+          company: flightlistfinal[i].split("-")[0],
+          dateTime: widget.dateTimetwo,
+          code: int.parse(flightlistfinal[i].split("-")[6]),
+          international: intern,
+        ));
+        if (flightCompanies.contains(flightlistfinal[i].split("-")[0]) == false) {
+          flightCompanies.add(flightlistfinal[i].split("-")[0]);
+          selectedCompanies.add(flightlistfinal[i].split("-")[0]);
+        }
+      }
+    }
     for (var i = 0; i < flightCompanies.length; i++) {
       show.add(true);
     }
@@ -51,8 +83,13 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
       selectedflights.add(flights[i]);
     }
     selectedflights.sort((a, b) => a.time.compareTo(b.time));
-    roundtrip=widget.Roundtrip;
-    selectedDate=widget.dataTimetwo!;
+    roundtrip = widget.Roundtrip;
+    selectedDate = widget.dateTimetwo;
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -279,13 +316,13 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
                       if(widget.international==false){
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (context) {
-                            return FlightBookingApp();
+                            return FlightBookingApp(username: widget.username,);
                           }),
                         );
                       }else{
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (context) {
-                            return FlightBookingAppint();
+                            return FlightBookingAppint(username: widget.username,);
                           }),
                         );
                       }
@@ -294,6 +331,9 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
                   )
                 ],
               ),
+              SizedBox(height: 6),
+              Text(flightlist=="noFlights" ? "پروازی در این تاریخ موجود نیست !" : "پرواز های موجودی : "),
+              SizedBox(height: 6),
               Expanded(
                 child: ListView.builder(
                   itemCount: selectedflights.length,
@@ -314,6 +354,7 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
                               MaterialPageRoute(
                                 builder: (context) {
                                   return ConfirmbuyTicketPage(
+                                    username: widget.username,
                                     srcflight: widget.sourceflight,
                                     numberOfPassengers: widget.pass,
                                     dstflight: flight,
@@ -337,7 +378,7 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
                           ],
                         ),
                         subtitle: Text(
-                          '${flight.cost} میلیون تومان',
+                          '${(flight.cost/1000000).toStringAsFixed(2)} میلیون تومان',
                           style: TextStyle(fontSize: 16),
                         ),
                         trailing: Text(
@@ -392,14 +433,22 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
 
   String getCompanyImage(String company) {
     switch (company) {
-      case 'iran air':
+      case 'Iran Air':
         return 'assets/Iran_Air.png';
-      case 'mahan air':
+      case 'Mahan Air':
         return 'assets/Mahan_Air.png';
-      case 'saha':
+      case 'Saha':
         return 'assets/Saha_air.png';
-      case 'asman':
+      case 'Aseman':
         return 'assets/aseman.png';
+      case 'ATA':
+        return 'assets/Borchin-ir-Ata Air logo png layered.png';
+      case 'Kish Air':
+        return 'assets/Borchin-ir-Kish Air logo png layered.png';
+      case 'Zagros':
+        return 'assets/Borchin-ir-Zagros Air logo png layered.png';
+      case 'Caspian':
+        return 'assets/Borchin-ir-caspian air logo png layered.png';
       default:
         return '';
     }
@@ -412,7 +461,7 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
       selectedDate = selectedDate.subtract(Duration(days: 1));
       Navigator.of(context).push(
         MaterialPageRoute(builder: (context){
-          return FlightSearchResultsPageBargasht(sourceflight: widget.sourceflight, source: widget.source, destination: widget.destination, dateTimeone: widget.dateTimeone, Roundtrip: widget.Roundtrip, pass: widget.pass,international: widget.international,);
+          return FlightSearchResultsPageBargasht(username: widget.username,sourceflight: widget.sourceflight, source: widget.source, destination: widget.destination, dateTimeone: widget.dateTimeone, Roundtrip: widget.Roundtrip, pass: widget.pass,international: widget.international, dateTimetwo: widget.dateTimetwo,);
         }
         ),
       );
@@ -422,10 +471,29 @@ class _FlightSearchResultsPageBargashtState extends State<FlightSearchResultsPag
       selectedDate = selectedDate.add(Duration(days: 1));
       Navigator.of(context).push(
         MaterialPageRoute(builder: (context){
-          return FlightSearchResultsPageBargasht(sourceflight: widget.sourceflight, source: widget.source, destination: widget.destination, dateTimeone: widget.dateTimeone, Roundtrip: widget.Roundtrip, pass: widget.pass,international: widget.international,);
+          return FlightSearchResultsPageBargasht(username: widget.username,sourceflight: widget.sourceflight, source: widget.source, destination: widget.destination, dateTimeone: widget.dateTimeone, Roundtrip: widget.Roundtrip, pass: widget.pass,international: widget.international,dateTimetwo: widget.dateTimetwo);
         }
         ),
       );
+  }
+  Future<String> sendMessage() async {
+    try {
+      final serverSocket = await Socket.connect(ip, port);
+      print('connected');
+      serverSocket.write("client-flightresult-${widget.username}-${widget.source}-${widget.destination}-${widget.dateTimetwo.toString().split(" ")[0].split("-")[0]}/${widget.dateTimetwo.toString().split(" ")[0].split("-")[1]}/${widget.dateTimetwo.toString().split(" ")[0].split("-")[2]},");
+      serverSocket.flush();
+      print('write');
+      await serverSocket.listen((socket) {
+        respon = String.fromCharCodes(socket).trim().substring(2);
+        setState(() {});
+        print("this is show: " + respon);
+      }).asFuture();
+
+      serverSocket.close();
+    } catch (e) {
+      print('Error: $e');
+    }
+    return respon;
   }
 }
 
