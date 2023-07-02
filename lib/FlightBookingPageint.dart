@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:untitled/FlightResultsPageRaft.dart';
 import 'package:untitled/HomePage.dart';
 
 class FlightBookingAppint extends StatelessWidget {
+  String username;
+  FlightBookingAppint({
+    required this.username,
+  });
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,13 +19,17 @@ class FlightBookingAppint extends StatelessWidget {
       ),
       home: Directionality(
         textDirection: TextDirection.rtl,
-        child: FlightBookingPage(),
+        child: FlightBookingPage(username: username,),
       ),
     );
   }
 }
 
 class FlightBookingPage extends StatefulWidget {
+  String username;
+  FlightBookingPage({
+    required this.username
+});
   @override
   _FlightBookingPageState createState() => _FlightBookingPageState();
 }
@@ -33,17 +43,27 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
   int adultCount = 1;
   int kidCount = 0;
   int babyCount = 0;
+  final String ip = '172.20.10.5';
+  final int port = 2486;
+  String respon="";
+  String city = "";
+  List<String> citie = [];
+  final List<String> cities = [];
 
-  final List<String> cities = [
-    'Dubai',
-    'Los Angeles',
-    'Paris',
-    'Tehran',
-    'Tokyo',
-    'Delhi',
-    'Madrid',
-    'Sydney'
-  ];
+  void initState() {
+    super.initState();
+    initializeData();
+  }
+
+  Future<void> initializeData() async {
+    city = await sendMessage();
+    citie = city.split("-");
+    for (int i = 0; i < citie.length-1; i++) {
+      if (!cities.contains(citie[i])) {
+        cities.add(citie[i]);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +77,7 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) {
-                return homepage();
+                return homepage(username: widget.username,);
               }),
             );
           },
@@ -239,6 +259,7 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) {
                             return FlightSearchResultsPageRaft(
+                              username: widget.username,
                                 source: selectedSource,
                                 destination: selectedDestination,
                                 dateTimeone: departureDate!,
@@ -283,6 +304,7 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) {
                             return FlightSearchResultsPageRaft(
+                              username: widget.username,
                                 source: selectedSource,
                                 destination: selectedDestination,
                                 dateTimeone: departureDate!,
@@ -334,6 +356,25 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
         }),
       ),
     );
+  }
+  Future<String> sendMessage() async {
+    try {
+      final serverSocket = await Socket.connect(ip, port);
+      print('connected');
+      serverSocket.write("client-FlightBookingInt,");
+      serverSocket.flush();
+      print('write');
+      await serverSocket.listen((socket) {
+        respon = String.fromCharCodes(socket).trim().substring(2);
+        setState(() {});
+        print("this is show: " + respon);
+      }).asFuture();
+
+      serverSocket.close();
+    } catch (e) {
+      print('Error: $e');
+    }
+    return respon;
   }
 }
 
