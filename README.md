@@ -1,6 +1,6 @@
 # AP-Project
 
-Hagh-Charter is a travel booking app that allows users to buy travel tickets (internatioan and domestic).
+Hagh-Charter is a travel booking app that allows users to buy travel tickets (international and domestic).
 
 ## Features
 
@@ -12,7 +12,7 @@ Hagh-Charter is a travel booking app that allows users to buy travel tickets (in
 
 ## Technologies Used
 
-- Flutter for cross-platform mobile app development
+- Flutter for mobile app development
 - Dart programming language
 - Java for Backend
 - .txt files for database
@@ -28,3 +28,27 @@ Hagh-Charter is a travel booking app that allows users to buy travel tickets (in
   <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105831_6fi6.png" alt="ChooseFlight" width="200"/>
   <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105953_g7zu.png" alt="CompeleteFlight" width="200"/>
 </div>
+
+## Getting Started
+
+1. Clone the repository:
+
+   ```shell
+   git clone https://github.com/KerKerook/AP-Project.git
+   
+2. Install the required dependencies:
+
+    ```shell
+    cd AP-Project
+    flutter pub get
+    
+3. Run the app:
+
+    ```shell
+    flutter run
+
+4. Run Server.java
+
+    ```shell
+    javac Server.java
+    java Server
