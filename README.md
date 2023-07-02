@@ -19,8 +19,11 @@ Hagh-Charter is a travel booking app that allows users to buy travel tickets (in
 
 ## Screenshots
 
-![SignUpPage](https://s8.uupload.ir/files/screenshot_2023-07-02_105520_j8a6.png)
-![AccountInfo](https://s8.uupload.ir/files/screenshot_2023-07-02_105618_w4t2.png)
-![MoneyPage](https://s8.uupload.ir/files/screenshot_2023-07-02_105637_8cjm.png)
-![TripList](https://s8.uupload.ir/files/screenshot_2023-07-02_105652_fbxj.png)
-![FlightBooking](https://s8.uupload.ir/files/screenshot_2023-07-02_105742_i1so.png)
+<div>
+  <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105520_j8a6.png" alt="SignUpPage" width="200"/>
+  <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105618_w4t2.png" alt="AccountInfo" width="200"/>
+  <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105637_8cjm.png" alt="MoneyPage" width="200"/>
+  <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105652_fbxj.png" alt="TripList" width="200"/>
+  <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105742_i1so.png" alt="FlightBooking" width="200"/>
+  <img src="https://s8.uupload.ir/files/screenshot_2023-07-02_105831_6fi6.png" alt="ChooseFlight" width="200"/>
+</div>
