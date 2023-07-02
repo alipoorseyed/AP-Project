@@ -1,50 +1,90 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'BottomBar.dart';
 
-class Flight {
-  final String shomare_sefaresh;
-  final String time;
-  final String cost;
-  final String company;
-  final DateTime date;
-
-  Flight({
-    required this.time,
-    required this.cost,
-    required this.company,
-    required this.shomare_sefaresh,
-    required this.date,
-  });
-}
 
 class TripsListPage extends StatefulWidget {
-  final List<Flight> flights;
+  String username;
 
-  TripsListPage({required this.flights});
+  TripsListPage({required this.username});
 
   @override
   _TripsListPageState createState() => _TripsListPageState();
 }
 
 class _TripsListPageState extends State<TripsListPage> {
+  List<Flight> nofilteredFlights = [];
   List<Flight> filteredFlights = [];
 
   TextEditingController shomareSefareshController = TextEditingController();
   DateTime? fromDate;
   DateTime? toDate;
+  final String ip = '172.20.10.5';
+  final int port = 2486;
+  String respon="";
+  String parvaz="";
+  List<String> parvazfinal=[];
+  bool ansewr=true;
+  List<String> tarikh=[];
+  String tarikhfinal="";
 
+  // @override
+  // void initState() async{
+  //   super.initState();
+  //   parvaz = await sendMessage();
+  //   if(parvaz=="noFlights"){
+  //     ansewr=false;
+  //   }else{
+  //     parvazfinal = parvaz.split("\n");
+  //     for(int i=0 ; i<parvazfinal.length ; i++){
+  //       tarikh = parvazfinal[i].split("-")[5].split("/");
+  //       tarikhfinal = tarikh[0]+"-"+tarikh[1]+"-"+tarikh[2];
+  //       nofilteredFlights.add(Flight(source: parvazfinal[i].split("-")[1], destenition: parvazfinal[i].split("-")[2], time: int.parse(parvazfinal[i].split("-")[3]), cost: double.parse(parvazfinal[i].split("-")[4]), company: parvazfinal[i].split("-")[0] , shomare_sefaresh: parvazfinal[i].split("-")[6], date:DateTime.parse(tarikhfinal) ));
+  //     }
+  //   }
+  //   filteredFlights = nofilteredFlights;
+  // }
   @override
   void initState() {
     super.initState();
-    filteredFlights = widget.flights;
+    initializeData();
   }
+
+  Future<void> initializeData() async {
+    parvaz = await sendMessage();
+    if (parvaz == "noFlights") {
+      setState(() {
+        ansewr = false;
+      });
+    } else {
+      setState(() {
+        parvazfinal = parvaz.split("\n");
+        for (int i = 0; i < parvazfinal.length; i++) {
+          tarikh = parvazfinal[i].split("-")[6].split("/");
+          tarikhfinal = tarikh[0] + "-" + tarikh[1] + "-" + tarikh[2];
+          nofilteredFlights.add(Flight(
+            source: parvazfinal[i].split("-")[2],
+            destenition: parvazfinal[i].split("-")[3],
+            time: int.parse(parvazfinal[i].split("-")[4]),
+            cost: double.parse(parvazfinal[i].split("-")[5]),
+            company: parvazfinal[i].split("-")[1],
+            shomare_sefaresh: parvazfinal[i].split("-")[7],
+            date: DateTime.parse(tarikhfinal),
+          ));
+        }
+        filteredFlights = nofilteredFlights;
+      });
+    }
+  }
+
 
   void applyFilters() {
     String filterShomareSefaresh = shomareSefareshController.text.toLowerCase().trim();
 
     setState(() {
-      filteredFlights = widget.flights.where((flight) {
+      filteredFlights = nofilteredFlights.where((flight) {
         bool shomareSefareshMatches = flight.shomare_sefaresh.toLowerCase().contains(filterShomareSefaresh);
 
         bool dateMatches = true;
@@ -174,6 +214,8 @@ class _TripsListPageState extends State<TripsListPage> {
                 ),
               ),
               SizedBox(height: 10.0),
+              Text(ansewr?"لیست پرواز ها":"پروازی موجود نیست"),
+              SizedBox(height: 10.0),
               Expanded(
                 child: ListView.builder(
                   itemCount: filteredFlights.length,
@@ -186,7 +228,7 @@ class _TripsListPageState extends State<TripsListPage> {
                       ),
                       child: ListTile(
                         title: Text(
-                          flight.shomare_sefaresh,
+                          '${flight.source} to ${flight.destenition}\n${flight.shomare_sefaresh}', // Display source to destination
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -198,7 +240,7 @@ class _TripsListPageState extends State<TripsListPage> {
                           ),
                         ),
                         trailing: Text(
-                          '${flight.cost} - ${flight.company}',
+                          '${(flight.cost/1000000).toStringAsFixed(2)} -میلیون تومان ${flight.company}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -208,11 +250,51 @@ class _TripsListPageState extends State<TripsListPage> {
                   },
                 ),
               ),
+
             ],
           ),
         ),
-        bottomNavigationBar: Bar(index: 2),
+        bottomNavigationBar: Bar(username: widget.username,index: 2),
       ),
     );
   }
+  Future<String> sendMessage() async {
+      try {
+        final serverSocket = await Socket.connect(ip, port);
+        print('connected');
+        serverSocket.write("client-getUserFlights-${widget.username},");
+        serverSocket.flush();
+        print('write');
+        await serverSocket.listen((socket) {
+          respon = String.fromCharCodes(socket).trim().substring(2);
+          setState(() {});
+          print("this is show: " + respon);
+        }).asFuture();
+
+        serverSocket.close();
+      } catch (e) {
+        print('Error: $e');
+      }
+
+    return respon;
+  }
+}
+class Flight {
+  final String shomare_sefaresh;
+  final int time;
+  final double cost;
+  final String company;
+  final DateTime date;
+  final String source;
+  final String destenition;
+
+  Flight({
+    required this.source,
+    required this.destenition,
+    required this.time,
+    required this.cost,
+    required this.company,
+    required this.shomare_sefaresh,
+    required this.date,
+  });
 }

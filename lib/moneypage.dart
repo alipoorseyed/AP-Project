@@ -1,28 +1,79 @@
- import 'package:flutter/material.dart';
+ import 'dart:io';
+import 'dart:math';
+
+import 'package:flutter/material.dart';
  import 'package:untitled/BottomBar.dart';
 class MoneyPage extends StatefulWidget {
-  final double initialBalance;
-  final List<Tarakonesh> tarakoneshList;
+  String username;
 
-  MoneyPage({required this.initialBalance, required this.tarakoneshList});
+  MoneyPage({required this.username});
 
   @override
   _MoneyPageState createState() => _MoneyPageState();
 }
 
 class _MoneyPageState extends State<MoneyPage> {
-  late double accountBalance;
+  double initialBalance=0;
+  List<Tarakonesh> tarakoneshList=[];
+  late double accountBalance=0;
+  final String ip = '172.20.10.5';
+  final int port = 2486;
+  String respon="";
+  String tarakonesh="";
+  List<String> tarakoneshfinal=[];
+  bool existtarakonesh=true;
+  bool increases = false;
   TextEditingController moneyController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    accountBalance = widget.initialBalance;
+    initializeData();
   }
 
-  void increaseBalance() {
+  Future<void> initializeData() async {
+    tarakonesh = await sendMessage();
+    initialBalance = double.parse(tarakonesh.split("\n")[0]);
+    accountBalance = initialBalance;
+    if (tarakonesh.split("\n")[1] == "invalid") {
+      existtarakonesh = false;
+    } else {
+      tarakoneshfinal = tarakonesh.split("\n");
+      for (int i = 1; i < tarakoneshfinal.length; i++) {
+        increases = false;
+        if (tarakoneshfinal[i].split("-")[1] == "increase") {
+          increases = true;
+        }
+        tarakoneshList.add(Tarakonesh(
+          kind: "داخلی",
+          increase: increases,
+          codePaygiri: tarakoneshfinal[i].split("-")[3],
+          cost: double.parse(tarakoneshfinal[i].split("-")[2]),
+        ));
+      }
+    }
+  }
+
+
+  void increaseBalance() async{
     double enteredMoney = double.parse(moneyController.text);
+    int code;
+    int counter=0;
+    while(true){
+      counter=0;
+      code = generateRandomNumber();
+      for(int i=0 ; i<tarakoneshList.length ; i++){
+        if(int.parse(tarakoneshList[i].codePaygiri!)==code){
+          counter++;
+        }
+      }
+      if(counter==0){
+        break;
+      }
+    }
+    String asn = await sendMessagebudget(code.toString());
     setState(() {
+      tarakoneshList.add(Tarakonesh(kind: "داخلی", increase: true, codePaygiri:code.toString() , cost: enteredMoney));
       accountBalance += enteredMoney;
       moneyController.clear();
     });
@@ -97,12 +148,12 @@ class _MoneyPageState extends State<MoneyPage> {
                   ],
                 ),
                 SizedBox(height: 20),
-                if (widget.tarakoneshList.isEmpty)
+                if (tarakoneshList.isEmpty)
                   Text(
                     'اطلاعاتی وجود ندارد',
                     style: TextStyle(fontSize: 16),
                   ),
-                if (widget.tarakoneshList.isNotEmpty)
+                if (tarakoneshList.isNotEmpty)
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(width: 1.0),
@@ -143,7 +194,7 @@ class _MoneyPageState extends State<MoneyPage> {
                             ),
                           ],
                         ),
-                        for (Tarakonesh tarakonesh in widget.tarakoneshList)
+                        for (Tarakonesh tarakonesh in tarakoneshList)
                           TableRow(
                             children: [
                               Padding(
@@ -174,10 +225,60 @@ class _MoneyPageState extends State<MoneyPage> {
         ),
         bottomNavigationBar: Directionality(
           textDirection: TextDirection.rtl, // Set text direction of bottom navigation bar to right-to-left
-          child: Bar(index: 3),
+          child: Bar(username: widget.username,index: 3),
         ),
       ),
     );
+  }
+  Future<String> sendMessage() async {
+    try {
+      final serverSocket = await Socket.connect(ip, port);
+      print('connected');
+      serverSocket.write("client-moneyPage-${widget.username},");
+      serverSocket.flush();
+      print('write');
+      await serverSocket.listen((socket) {
+        respon = String.fromCharCodes(socket).trim().substring(2);
+        setState(() {});
+        print("this is show: " + respon);
+      }).asFuture();
+
+      serverSocket.close();
+    } catch (e) {
+      print('Error: $e');
+    }
+
+    return respon;
+  }
+  Future<String> sendMessagebudget(String code) async {
+    if(moneyController.text.isNotEmpty) {
+      try {
+        final serverSocket = await Socket.connect(ip, port);
+        print('connected');
+        serverSocket.write(
+            "client-increaseBudget-${widget.username}-${moneyController
+                .text}-${code},");
+        serverSocket.flush();
+        print('write');
+        await serverSocket.listen((socket) {
+          respon = String.fromCharCodes(socket).trim().substring(2);
+          setState(() {});
+          print("this is show: " + respon);
+        }).asFuture();
+
+        serverSocket.close();
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
+
+    return respon;
+  }
+  int generateRandomNumber() {
+    Random random = Random();
+    int min = 100000; // Minimum 6-digit number
+    int max = 999999; // Maximum 6-digit number
+    return min + random.nextInt(max - min);
   }
 }
 
@@ -185,7 +286,7 @@ class Tarakonesh {
   String? kind = "";
   bool? increase = false;
   String? codePaygiri = "";
-  int cost;
+  double cost;
 
   Tarakonesh({
     required this.kind,
