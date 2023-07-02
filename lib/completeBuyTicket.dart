@@ -9,7 +9,8 @@ class ConfirmbuyTicketPage extends StatefulWidget {
   final int numberOfPassengers;
   Flight srcflight;
   Flight? dstflight;
-  ConfirmbuyTicketPage({required this.numberOfPassengers,required this.srcflight,this.dstflight});
+  String username;
+  ConfirmbuyTicketPage({required this.username,required this.numberOfPassengers,required this.srcflight,this.dstflight});
 
   @override
   _ConfirmbuyTicketPageState createState() => _ConfirmbuyTicketPageState();
@@ -71,14 +72,14 @@ class _ConfirmbuyTicketPageState extends State<ConfirmbuyTicketPage> {
       if(widget.dstflight!=null){
         Navigator.of(context).push(
           MaterialPageRoute(builder:(context){
-            return ConfirmFlightTicketPage(goflight: widget.srcflight,returnflight: widget.dstflight,isRoundTrip: true);
+            return ConfirmFlightTicketPage(username: widget.username,goflight: widget.srcflight,returnflight: widget.dstflight,isRoundTrip: true);
           }
           ),
         );
       }else{
         Navigator.of(context).push(
           MaterialPageRoute(builder:(context){
-            return ConfirmFlightTicketPage(goflight: widget.srcflight,isRoundTrip: false);
+            return ConfirmFlightTicketPage(username: widget.username,goflight: widget.srcflight,isRoundTrip: false);
           }
           ),
         );
